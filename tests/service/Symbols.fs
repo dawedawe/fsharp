@@ -376,6 +376,180 @@ let tester2: int Group = []
             | other -> Assert.Fail(sprintf "myArr was supposed to be a value, but is %A"  other)
 
     [<Test>]
+    let ``FsharpType.Format works for Constant Measures`` () =
+        let _, checkResults = getParseAndCheckResults """
+            [<Measure>] type kg
+
+            [<Literal>]
+            let tester = 42<kg>
+        """
+        let expected = "int<kg>"
+        let name = "tester"
+        let symbolUse = findSymbolUseByName name checkResults
+        match symbolUse.Symbol with
+        | :? FSharpMemberOrFunctionOrValue as mfv ->
+                mfv.FullType.Format symbolUse.DisplayContext
+                |> should equal expected
+        | _ -> Assert.Fail (sprintf "Couldn't get member: %s" name)
+
+    [<Test>]
+    let ``FsharpType.Format works for Product Measures`` () =
+        let _, checkResults = getParseAndCheckResults """
+            [<Measure>] type m
+            [<Measure>] type s
+
+            [<Literal>]
+            let tester = 42<m * s>
+        """
+        let expected = "int<m * s>"
+        let name = "tester"
+        let symbolUse = findSymbolUseByName name checkResults
+        match symbolUse.Symbol with
+        | :? FSharpMemberOrFunctionOrValue as mfv ->
+                mfv.FullType.Format symbolUse.DisplayContext
+                |> should equal expected
+        | _ -> Assert.Fail (sprintf "Couldn't get member: %s" name)
+
+    [<Test>]
+    let ``FsharpType.Format works for Product Measures 2`` () =
+        let _, checkResults = getParseAndCheckResults """
+            [<Measure>] type m
+            [<Measure>] type s
+            [<Measure>] type kg
+
+            [<Literal>]
+            let tester = 42<m * s * kg>
+        """
+        let expected = "int<m * s * kg>"
+        let name = "tester"
+        let symbolUse = findSymbolUseByName name checkResults
+        match symbolUse.Symbol with
+        | :? FSharpMemberOrFunctionOrValue as mfv ->
+                mfv.FullType.Format symbolUse.DisplayContext
+                |> should equal expected
+        | _ -> Assert.Fail (sprintf "Couldn't get member: %s" name)
+
+    [<Test>]
+    let ``FsharpType.Format works for Divide Measures`` () =
+        let _, checkResults = getParseAndCheckResults """
+            [<Measure>] type m
+            [<Measure>] type s
+
+            [<Literal>]
+            let tester = 42<m / s>
+        """
+        let expected = "int<m / s>"
+        let name = "tester"
+        let symbolUse = findSymbolUseByName name checkResults
+        match symbolUse.Symbol with
+        | :? FSharpMemberOrFunctionOrValue as mfv ->
+                mfv.FullType.Format symbolUse.DisplayContext
+                |> should equal expected
+        | _ -> Assert.Fail (sprintf "Couldn't get member: %s" name)
+
+    [<Test>]
+    let ``FsharpType.Format works for Measure.Seq`` () =
+        let _, checkResults = getParseAndCheckResults """
+            [<Measure>] type m
+            [<Measure>] type s
+            [<Measure>] type kg
+
+            [<Literal>]
+            let tester = 42<m s kg>
+        """
+        let expected = "int<m s kg>"
+        let name = "tester"
+        let symbolUse = findSymbolUseByName name checkResults
+        match symbolUse.Symbol with
+        | :? FSharpMemberOrFunctionOrValue as mfv ->
+                mfv.FullType.Format symbolUse.DisplayContext
+                |> should equal expected
+        | _ -> Assert.Fail (sprintf "Couldn't get member: %s" name)
+    
+    [<Test>]
+    let ``FsharpType.Format works for Divide Measures without explicit divident`` () =
+        let _, checkResults = getParseAndCheckResults """
+            [<Measure>] type s
+
+            [<Literal>]
+            let tester = 42< / s>
+        """
+        let expected = "int< / s>"
+        let name = "tester"
+        let symbolUse = findSymbolUseByName name checkResults
+        match symbolUse.Symbol with
+        | :? FSharpMemberOrFunctionOrValue as mfv ->
+                mfv.FullType.Format symbolUse.DisplayContext
+                |> should equal expected
+        | _ -> Assert.Fail (sprintf "Couldn't get member: %s" name)
+    
+    [<Test>]
+    let ``FsharpType.Format works for Inverse`` () =
+        let _, checkResults = getParseAndCheckResults """
+            [<Measure>] type s
+            
+            [<Literal>]
+            let tester = 42<1 / s>
+        """
+        let expected = "int<1 / s>"
+        let name = "tester"
+        let symbolUse = findSymbolUseByName name checkResults
+        match symbolUse.Symbol with
+        | :? FSharpMemberOrFunctionOrValue as v ->
+                v.FullType.Format symbolUse.DisplayContext
+                |> should equal expected
+        | _ -> Assert.Fail (sprintf "Couldn't get member: %s" name)
+    
+    [<Test>]
+    let ``FsharpType.Format works for Measure.One`` () =
+        let _, checkResults = getParseAndCheckResults """
+            [<Measure>] type s
+            
+            [<Literal>]
+            let tester = 42<1>
+        """
+        let expected = "int<1>"
+        let name = "tester"
+        let symbolUse = findSymbolUseByName name checkResults
+        match symbolUse.Symbol with
+        | :? FSharpMemberOrFunctionOrValue as v ->
+                v.FullType.Format symbolUse.DisplayContext
+                |> should equal expected
+        | _ -> Assert.Fail (sprintf "Couldn't get member: %s" name)
+        
+    [<Test>]
+    let ``FsharpType.Format works for Measure.Anon`` () =
+        let _, checkResults = getParseAndCheckResults """
+            [<Literal>]
+            let tester = 42<_>
+        """
+        let expected = "int<_>"
+        let name = "tester"
+        let symbolUse = findSymbolUseByName name checkResults
+        match symbolUse.Symbol with
+        | :? FSharpMemberOrFunctionOrValue as v ->
+                v.FullType.Format symbolUse.DisplayContext
+                |> should equal expected
+        | _ -> Assert.Fail (sprintf "Couldn't get member: %s" name)
+    
+    [<Test>]
+    let ``FsharpType.Format works for Measure.Power`` () =
+        let _, checkResults = getParseAndCheckResults """
+            [<Measure>] type s
+            
+            [<Literal>]
+            let tester = 42<s^2>
+        """
+        let expected = "int<s^2>"
+        let name = "tester"
+        let symbolUse = findSymbolUseByName name checkResults
+        match symbolUse.Symbol with
+        | :? FSharpMemberOrFunctionOrValue as v ->
+                v.FullType.Format symbolUse.DisplayContext
+                |> should equal expected
+        | _ -> Assert.Fail (sprintf "Couldn't get member: %s" name)
+    
+    [<Test>]
     let ``Unfinished long ident type `` () =
         let _, checkResults = getParseAndCheckResults """
 let g (s: string) = ()
