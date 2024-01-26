@@ -490,13 +490,35 @@ type IncrementalOptimizationEnv =
 //------------------------------------------------------------------------- 
 
 /// IsPartialExprVal indicates the cases where we cant rebuild an expression
-let rec IsPartialExprVal x =
+let rec IsPartialExprValOld x =
     match x with
     | UnknownValue -> true
-    | TupleValue args | RecdValue (_, args) | UnionCaseValue (_, args) -> Array.exists IsPartialExprVal args
+    | TupleValue args | RecdValue (_, args) | UnionCaseValue (_, args) -> Array.exists IsPartialExprValOld args
     | ConstValue _ | CurriedLambdaValue _ | ConstExprValue _ -> false
     | ValValue (_, a) 
-    | SizeValue(_, a) -> IsPartialExprVal a
+    | SizeValue(_, a) -> IsPartialExprValOld a
+
+let IsPartialExprVal (exprValInfo: ExprValueInfo) : bool =
+    let rec helper (x: ExprValueInfo) finalCont : bool =
+        match x with
+        | UnknownValue -> true |> finalCont
+        | TupleValue args
+        | RecdValue (_, args)
+        | UnionCaseValue (_, args) ->
+            let continuations = List.map helper (args |> List.ofArray)
+            let finalContinuation nodes = List.exists id nodes |> finalCont
+            Continuation.sequence continuations finalContinuation
+            
+        | ConstValue _
+        | CurriedLambdaValue _
+        | ConstExprValue _ -> false |> finalCont
+        | ValValue (_, a) 
+        | SizeValue(_, a) -> helper a finalCont
+
+    let newV = helper exprValInfo id
+    let oldV = IsPartialExprValOld exprValInfo
+    if newV <> oldV then failwith $"bad rewrite old: {oldV} new: {newV}"
+    newV
 
 let CheckInlineValueIsComplete (v: Val) res =
     if v.MustInline && IsPartialExprVal res then

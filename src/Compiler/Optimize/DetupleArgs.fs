@@ -381,10 +381,21 @@ type TupleStructure =
     | UnknownTS
     | TupleTS of TupleStructure list
 
-let rec ValReprInfoForTS ts =
-    match ts with
-    | UnknownTS -> [ ValReprInfo.unnamedTopArg ]
-    | TupleTS ts -> ts |> List.collect ValReprInfoForTS
+// let rec ValReprInfoForTS ts =
+//     match ts with
+//     | UnknownTS -> [ ValReprInfo.unnamedTopArg ]
+//     | TupleTS ts -> ts |> List.collect ValReprInfoForTS
+    
+let ValReprInfoForTS  (ts: TupleStructure) : ArgReprInfo list list =
+    let rec helper (ts: TupleStructure) finalCont =
+        match ts with
+        | UnknownTS -> [ ValReprInfo.unnamedTopArg ] |> finalCont
+        | TupleTS ts ->
+            let continuations = List.map helper ts
+            let finalContinuation nodes = List.collect id nodes |> finalCont
+            Continuation.sequence continuations finalContinuation
+ 
+    helper ts id
 
 let rec andTS ts tsB =
     match ts, tsB with
