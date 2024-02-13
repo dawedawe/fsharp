@@ -7,10 +7,10 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  buildwin:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [windows-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -21,8 +21,22 @@ jobs:
         dotnet-version: 8.0.x
     - name: Restore tools
       run: dotnet tool restore
-    - name: Build
-      run:
-        cd ./tests/benchmarks/FCSBenchmarks/CompilerServiceBenchmarks && dotnet build -c Release
+    - name: RunBenchmarkWindows
+      run: ./build.cmd -configuration Release -testBenchmarks
+
+  buildunix:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore tools
+      run: dotnet tool restore
     - name: RunBenchmark
-      run: cd ./tests/benchmarks/FCSBenchmarks/CompilerServiceBenchmarks && dotnet run --filter *
+      run: ./build.sh --configuration Release --testBenchmarks
