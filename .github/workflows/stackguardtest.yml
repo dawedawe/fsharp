@@ -25,4 +25,4 @@ jobs:
       run:
         cd ./tests/benchmarks/FCSBenchmarks/CompilerServiceBenchmarks && dotnet build -c Release
     - name: RunBenchmark
-      run: dotnet run --filter *
+      run: cd ./tests/benchmarks/FCSBenchmarks/CompilerServiceBenchmarks && dotnet run --filter *
