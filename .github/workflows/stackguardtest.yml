@@ -38,5 +38,7 @@ jobs:
         dotnet-version: 8.0.x
     - name: Restore tools
       run: dotnet tool restore
+    - name: fix xbit
+      run: chmod +x tests/benchmarks/SmokeTestBenchmarks.sh
     - name: RunBenchmark
       run: ./build.sh --configuration Release --testBenchmarks
