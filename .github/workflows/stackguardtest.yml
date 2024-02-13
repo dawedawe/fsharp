@@ -23,7 +23,6 @@ jobs:
       run: dotnet tool restore
     - name: Build
       run:
-        cd ./tests/benchmarks/FCSBenchmarks/CompilerServiceBenchmarks;
-        dotnet build -c Release
+        cd ./tests/benchmarks/FCSBenchmarks/CompilerServiceBenchmarks && dotnet build -c Release
     - name: RunBenchmark
       run: dotnet run --filter *
