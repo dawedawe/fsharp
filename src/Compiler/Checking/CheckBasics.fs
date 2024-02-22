@@ -30,7 +30,9 @@ open FSharp.Compiler.TypeProviders
 #if DEBUG
 let TcStackGuardDepth = GetEnvInteger "FSHARP_TcStackGuardDepth" 40
 #else
-let TcStackGuardDepth = GetEnvInteger "FSHARP_TcStackGuardDepth" 80
+let TcStackGuardDepth =
+    let defaultStackGuardDepth = StackGuard.GetOsDependentDepth(80, 80, 80, 80)
+    GetEnvInteger "FSHARP_TcStackGuardDepth" defaultStackGuardDepth
 #endif
 
 /// The ValReprInfo for a value, except the number of typars is not yet inferred
