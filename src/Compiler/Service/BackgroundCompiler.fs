@@ -1184,9 +1184,15 @@ type internal BackgroundCompiler
         |> Option.bind (fun (f: FSharpFileSnapshot) ->
             let options = projectSnapshot.ToOptions()
             let sourceText = f.GetSource() |> Async.AwaitTask |> Async.RunSynchronously
+            let hashOfGiven = sourceText.GetHashCode() |> int64
 
-            self.TryGetRecentCheckResultsForFile(fileName, options, Some sourceText, userOpName)
-            |> Option.map (fun (parseFileResults, checkFileResults, _hash) -> (parseFileResults, checkFileResults)))
+            let results =
+                self.TryGetRecentCheckResultsForFile(fileName, options, Some sourceText, userOpName)
+
+            match results with
+            | Some(parseFileResults, checkFileResults, cachedHash) when hashOfGiven = cachedHash ->
+                Some(parseFileResults, checkFileResults)
+            | _ -> None)
 
     /// Parse and typecheck the whole project (the implementation, called recursively as project graph is evaluated)
     member private _.ParseAndCheckProjectImpl(options, userOpName) =
