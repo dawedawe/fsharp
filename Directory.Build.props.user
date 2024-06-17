@@ -1,0 +1,9 @@
+<Project>
+    <PropertyGroup>
+        <BUILDING_USING_DOTNET>true</BUILDING_USING_DOTNET>
+        <OtherFlags>$(OtherFlags) --test:GraphBasedChecking --test:ParallelOptimization --test:ParallelIlxGen --test:DumpCheckingGraph --parallelreferenceresolution</OtherFlags>
+        <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+        <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+        <NoWarn>$(NoWarn);FS1063</NoWarn>
+    </PropertyGroup>
+</Project>
